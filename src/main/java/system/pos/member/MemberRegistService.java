@@ -12,6 +12,9 @@ public class MemberRegistService {
 	
 	public MemberRegistService() {}
 
+	/**
+	 * 계정 등록
+	 */
 	public void regist(MemberRegistRequest req) {
 		Date d = new Date();
 		SimpleDateFormat date = new SimpleDateFormat("yyyy/MM/dd hh:mm");
@@ -23,7 +26,10 @@ public class MemberRegistService {
 				newMember.getPassword()+ newMember.getRegDate());
 		memberDao.insert(newMember);
 	}
-	
+
+	/**
+	 * 계정 삭제
+	 */
 	public void delete(MemberRegistRequest req) {
 		Member member = memberDao.selectById(req.getId());
 		memberDao.delete(member);

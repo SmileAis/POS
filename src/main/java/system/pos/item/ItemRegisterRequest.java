@@ -1,11 +1,11 @@
 package system.pos.item;
 
 public class ItemRegisterRequest {
-	private String code;
-	private String name;
-	private int price;
-	private int stock;
-	private String receiveDate;
+	private String code;		// 상품 코드
+	private String name;		// 상품명
+	private int price;		// 가격
+	private int stock;		// 재고
+	private String receiveDate;		// 입고 날짜
 	
 	public void setCode(String code) {
 		this.code = code;

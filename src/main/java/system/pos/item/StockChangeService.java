@@ -8,14 +8,20 @@ public class StockChangeService {
 	public StockChangeService(ItemDao itemDao) {
 		this.itemDao = itemDao;
 	}
-	
+
+	/**
+	 * 재고 수정 처리
+	 */
 	public void change(StockChangeRequest req, int stock) {
 		Item item = itemDao.selectByCode(req.getCode());
 		if(item == null) return;
 		Item changeItem = new Item(item.getCode(), item.getName(), item.getPrice(), stock, item.getReceiveDate());
 		itemDao.change(changeItem);
 	}
-	
+
+	/**
+	 * 입고 처리
+	 */
 	public void receive(StockChangeRequest req, int stock) {
 		Item item = itemDao.selectByCode(req.getCode());
 		if(item == null) return;
@@ -25,7 +31,10 @@ public class StockChangeService {
 		itemDao.receive(receiveItem);
 		itemDao.receiveLog(receiveItem, stock);
 	}
-	
+
+	/**
+	 * 판매 처리
+	 */
 	public void sell(StockChangeRequest req, int count) {
 		Item item = itemDao.selectByCode(req.getCode());
 		if(item == null) {

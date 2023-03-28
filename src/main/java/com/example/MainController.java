@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import system.pos.item.Item;
@@ -39,19 +41,25 @@ public class MainController {
 
 	private List<Item> sellList = new ArrayList<Item>();
 	private List<Integer> countList = new ArrayList<Integer>();
-	
+
 //<--------------login---------------------------------------------->
+	/**
+	 * 메인 화면
+	 */
 	@GetMapping({"/", "/login"})
 	public String login(Model model) {
 		return "login/login";
 	}
-	@GetMapping("/login/logincheck")
-	public String logincheck(Model model, 
-			@RequestParam(value="id") String id,
-			@RequestParam(value="pwd") String pwd) 
-	{
+
+	/**
+	 * 로그인 시도
+	 */
+	@RequestMapping(value = "/login/logincheck", method = RequestMethod.POST)
+	public String logincheck(Model model,
+							 @RequestParam(value="id") String id,
+							 @RequestParam(value="pwd") String pwd) {
+
 		Member member = memberDao.selectById(id);
-		
 		if(member != null && member.getPassword().equals(pwd)) {
 			model.addAttribute("id", id);
 			model.addAttribute("member", member);
@@ -60,41 +68,48 @@ public class MainController {
 		return "login/logincheck";
 	}
 //<--------------login---------------------------------------------->
-	
-//<--------------menu---------------------------------------------->	
+
+	//<--------------menu---------------------------------------------->
 	@GetMapping("/pos_main")
 	public String posMain() {
 		sellList.clear();
 		countList.clear();
 		return "pos_main";
 	}
+
 	@GetMapping("/menu/stockMenu")
 	public String stockMenu(Model model) {
 		return "menu/stockMenu";
 	}
+
 	@GetMapping("/menu/statMenu")
 	public String statMenu(Model model) {
 		return "menu/statMenu";
 	}
+
 	@GetMapping("/menu/memberMenu")
 	public String memberMenu(Model model) {
 		return "menu/memberMenu";
 	}
 //<--------------menu---------------------------------------------->
-	
-//<--------------sell---------------------------------------------->	
+
+	//<--------------sell---------------------------------------------->
 	@GetMapping("/menu/sell")
 	public String sell(Model model) {
 		model.addAttribute("sellList", sellList);
 		model.addAttribute("countList", countList);
-		
+
 		return "menu/sell";
 	}
+
+	/**
+	 * 상품 판매 처리
+	 */
 	@GetMapping("/menu/addSell")
 	public String addSell(Model model,
-			@RequestParam(value="code") String code,
-			@RequestParam(value="count") int count) {
-	
+						  @RequestParam(value="code") String code,
+						  @RequestParam(value="count") int count) {
+
 		Item item = itemDao.selectByCode(code);
 		if(item == null)
 			return "menu/errorPage";
@@ -105,6 +120,10 @@ public class MainController {
 
 		return "menu/addSell";
 	}
+
+	/**
+	 *  판매 후 재고 처리
+	 */
 	@GetMapping("/menu/finishSell")
 	public String sellFinish(Model model) {
 		StockChangeRequest req = new StockChangeRequest();
@@ -124,32 +143,38 @@ public class MainController {
 			return "/";
 		}
 	}
-//<--------------sell---------------------------------------------->	
-	
-//<-------stock------------------------------------------------->		
+//<--------------sell---------------------------------------------->
+
+//<-------stock------------------------------------------------->
+	/**
+	 * 전체 재고
+	 */
 	@GetMapping("/stock/view")
 	public String itemList(Model model) {
 		List<Item> itemList = itemDao.selectAll();
 		model.addAttribute("items", itemList);
 		return "/stock/view";
 	}
-	
+
 	@GetMapping("/stock/receive")
-	public String stockReceive() {	
+	public String stockReceive() {
 		return "stock/receive";
 	}
-	
+
+	/**
+	 *  입고 처리
+	 */
 	@GetMapping("/stock/finishReceive")
 	public String stockReceiveFinish(Model model ,
-			@RequestParam(value="code") String code,
-			@RequestParam(value="stock") int stock) {
+									 @RequestParam(value="code") String code,
+									 @RequestParam(value="stock") int stock) {
 		if(itemDao.selectByCode(code)== null)
 			return "/stock/errorPage";
 		model.addAttribute("code", code);
 		model.addAttribute("name", itemDao.selectByCode(code).getName());
 		model.addAttribute("stock", stock);
 		StockChangeRequest req = new StockChangeRequest();
-		
+
 		try {
 			req.setCode(code);
 			req.setStock(stock);
@@ -160,21 +185,24 @@ public class MainController {
 			return "/";
 		}
 	}
-	
+
 	@GetMapping("/stock/delete")
 	public String stockDelete(Model model) {
 		return "stock/delete";
 	}
-	
+
+	/**
+	 * 제품 삭제 처리
+	 */
 	@GetMapping("/stock/finishDelete")
 	public String stockDeleteFinish(Model model,
-			@RequestParam(value="code") String code) {
+									@RequestParam(value="code") String code) {
 		if(itemDao.selectByCode(code)== null)
 			return "/stock/errorPage";
-		
+
 		model.addAttribute("code", code);
 		model.addAttribute("name", itemDao.selectByCode(code).getName());
-		
+
 		ItemRegisterRequest req = new ItemRegisterRequest();
 		try {
 			req.setCode(code);
@@ -186,17 +214,21 @@ public class MainController {
 		}
 	}
 	@GetMapping("/stock/regist")
-	public String stockRegist(Model model) {	
+	public String stockRegist(Model model) {
 		return "stock/regist";
 	}
+
+	/**
+	 * 제품 등록 처리
+	 */
 	@GetMapping("/stock/finishRegist")
 	public String stockRegistFinish(Model model ,
-			@RequestParam(value="code") String code,
-			@RequestParam(value="name") String name,
-			@RequestParam(value="price") int price) {
-		model.addAttribute("code", code);	
+									@RequestParam(value="code") String code,
+									@RequestParam(value="name") String name,
+									@RequestParam(value="price") int price) {
+		model.addAttribute("code", code);
 		model.addAttribute("name", name);
-			
+
 		ItemRegisterRequest req = new ItemRegisterRequest();
 		try {
 			req.setCode(code);
@@ -213,13 +245,17 @@ public class MainController {
 	public String itemSearch(Model model) {
 		return "/stock/search";
 	}
+
+	/**
+	 * 제품 검색 처리
+	 */
 	@GetMapping("/stock/finishSearch")
 	public String itemSearchFinish(Model model,
-			@RequestParam(value="code") String code) {
+								   @RequestParam(value="code") String code) {
 		Item item = itemDao.selectByCode(code);
 		if(item == null)
 			return "/stock/errorPage";
-		
+
 		model.addAttribute("code", code);
 		model.addAttribute("name", item.getName());
 		model.addAttribute("price", item.getPrice());
@@ -228,19 +264,22 @@ public class MainController {
 		return "/stock/finishSearch";
 	}
 	@GetMapping("/stock/change")
-	public String stockChange() {	
+	public String stockChange() {
 		return "stock/change";
 	}
-	
+
+	/**
+	 * 재고 수정 처리
+	 */
 	@GetMapping("/stock/finishChange")
 	public String stockChangeinish(Model model ,
-			@RequestParam(value="code") String code,
-			@RequestParam(value="stock") int stock) {
+								   @RequestParam(value="code") String code,
+								   @RequestParam(value="stock") int stock) {
 		if(itemDao.selectByCode(code)== null)
 			return "/stock/errorPage";
-			model.addAttribute("code", code);
-			model.addAttribute("name", itemDao.selectByCode(code).getName());
-			model.addAttribute("stock", stock);
+		model.addAttribute("code", code);
+		model.addAttribute("name", itemDao.selectByCode(code).getName());
+		model.addAttribute("stock", stock);
 		StockChangeRequest req = new StockChangeRequest();
 		try {
 			req.setCode(code);
@@ -252,48 +291,68 @@ public class MainController {
 			return "/";
 		}
 	}
-//<-------stock------------------------------------------------->	
+//<-------stock------------------------------------------------->
 
 //<-------statistic---------------------------------------------->
+
+	/**
+	 * 전체 매출 확인
+	 */
 	@GetMapping("/stat/all")
-	public String statAll(Model model) {	
+	public String statAll(Model model) {
 		List<SellLog> sellList = itemDao.selectAllSellLog();
 		model.addAttribute("sellList", sellList);
-		
+
 		return "stat/all";
 	}
+
+	/**
+	 * 당일 매출 확인
+	 */
 	@GetMapping("/stat/today")
-	public String statToday(Model model) {	
+	public String statToday(Model model) {
 		List<SellLog> sellList = itemDao.selectTodaySellLog();
 		while(sellList.indexOf(null) != -1){
 			sellList.remove(null);
 		}
 		model.addAttribute("sellList", sellList);
-		
+
 		return "stat/today";
 	}
+
+	/**
+	 * 금주 매출 확인
+	 */
 	@GetMapping("/stat/week")
-	public String statWeek(Model model) {	
+	public String statWeek(Model model) {
 		List<SellLog> sellList = itemDao.selectWeekSellLog();
 		while(sellList.indexOf(null) != -1){
 			sellList.remove(null);
 		}
 		model.addAttribute("sellList", sellList);
-		
+
 		return "stat/week";
 	}
+
+	/**
+	 * 한달 매출 확인
+	 */
 	@GetMapping("/stat/month")
-	public String statMonth(Model model) {	
+	public String statMonth(Model model) {
 		List<SellLog> sellList = itemDao.selectMonthSellLog();
 		while(sellList.indexOf(null) != -1){
 			sellList.remove(null);
 		}
 		model.addAttribute("sellList", sellList);
-		
+
 		return "stat/month";
 	}
+
+	/**
+	 * 판매량 top5 확인
+	 */
 	@GetMapping("/stat/quantity5")
-	public String statQuantity(Model model) {	
+	public String statQuantity(Model model) {
 		List<SellLog> sellLog = itemDao.selectAllSellLog();
 		List<String> codeTop5 = new ArrayList<>();
 		List<Integer> countTop5 = new ArrayList<>();
@@ -302,7 +361,7 @@ public class MainController {
 		Map<String, Integer>tmp = new HashMap<>();
 		int idx;
 		String findKey ="";
-		
+
 		for(int i=0; i<sellLog.size(); i++) {
 			if(!codeTop5.contains(sellLog.get(i).getCode())) {
 				codeTop5.add(sellLog.get(i).getCode());
@@ -316,34 +375,38 @@ public class MainController {
 		for(int i=0; i<codeTop5.size(); i++) {
 			tmp.put(codeTop5.get(i), countTop5.get(i));
 		}
-		
+
 		Collections.sort(countTop5, Collections.reverseOrder());
-		
+
 		for(int i=0; i<5; i++) {
 			for(String key : tmp.keySet()) {
-			    if(tmp.get(key).equals(countTop5.get(i))) {
-			      findKey = key;
-			      break;
-			    }
+				if(tmp.get(key).equals(countTop5.get(i))) {
+					findKey = key;
+					break;
+				}
 			}
 			codeTop5.set(i, findKey);
 			tmp.remove(findKey);
 		}
-		
+
 		for(int i=0; i<5; i++) {
 			nameTop5.add(itemDao.selectByCode(codeTop5.get(i)).getName());
 			priceTop5.add((itemDao.selectByCode(codeTop5.get(i)).getPrice()) * countTop5.get(i));
 		}
-		
+
 		model.addAttribute("nameTop5", nameTop5);
 		model.addAttribute("priceTop5", priceTop5);
 		model.addAttribute("codeTop5", codeTop5);
 		model.addAttribute("countTop5", countTop5);
-		
+
 		return "stat/quantity5";
 	}
+
+	/**
+	 * 판매액 top5
+	 */
 	@GetMapping("/stat/earning5")
-	public String statEarning(Model model) {	
+	public String statEarning(Model model) {
 		List<SellLog> sellLog = itemDao.selectAllSellLog();
 		List<String> codeTop5 = new ArrayList<>();
 		List<Integer> countTop5 = new ArrayList<>();
@@ -352,7 +415,7 @@ public class MainController {
 		Map<String, Integer>tmp = new HashMap<>();
 		int idx;
 		String findKey ="";
-		
+
 		for(int i=0; i<sellLog.size(); i++) {
 			if(!codeTop5.contains(sellLog.get(i).getCode())) {
 				codeTop5.add(sellLog.get(i).getCode());
@@ -365,25 +428,25 @@ public class MainController {
 		for(int i=0; i<codeTop5.size(); i++) {
 			tmp.put(codeTop5.get(i), priceTop5.get(i));
 		}
-		
+
 		Collections.sort(priceTop5, Collections.reverseOrder());
-		
+
 		for(int i=0; i<5; i++) {
 			for(String key : tmp.keySet()) {
-			    if(tmp.get(key).equals(priceTop5.get(i))) {
-			      findKey = key;
-			      break;
-			    }
+				if(tmp.get(key).equals(priceTop5.get(i))) {
+					findKey = key;
+					break;
+				}
 			}
 			codeTop5.set(i, findKey);
 			tmp.remove(findKey);
 		}
-		
+
 		for(int i=0; i<5; i++) {
 			nameTop5.add(itemDao.selectByCode(codeTop5.get(i)).getName());
 			countTop5.add((Integer)(priceTop5.get(i) / itemDao.selectByCode(codeTop5.get(i)).getPrice()));
 		}
-		
+
 		model.addAttribute("nameTop5", nameTop5);
 		model.addAttribute("priceTop5", priceTop5);
 		model.addAttribute("codeTop5", codeTop5);
@@ -392,28 +455,35 @@ public class MainController {
 		return "stat/earning5";
 	}
 //<-------statistic---------------------------------------------->
-	
-//<-------Member------------------------------------------------>	
+
+//<-------Member------------------------------------------------>
+
+	/**
+	 * 모든 계정 확인
+	 */
 	@GetMapping("/member/view")
 	public String memberList(Model model) {
 		List<Member> memberList = memberDao.selectAll();
 		model.addAttribute("members", memberList);
 		return "member/view";
 	}
-	
+
 	@GetMapping("/member/regist")
-	public String memRegist(Model model) {	
+	public String memRegist(Model model) {
 		return "member/regist";
 	}
-	
+
+	/**
+	 * 맴버 등록 처리
+	 */
 	@GetMapping("/member/finishRegist")
 	public String memRegistFinish(Model model ,
-			@RequestParam(value="rank") String rank,
-			@RequestParam(value="name") String name,
-			@RequestParam(value="id") String id,
-			@RequestParam(value="pwd") String pwd) {
-			model.addAttribute("name", name);
-			model.addAttribute("id", id);
+								  @RequestParam(value="rank") String rank,
+								  @RequestParam(value="name") String name,
+								  @RequestParam(value="id") String id,
+								  @RequestParam(value="pwd") String pwd) {
+		model.addAttribute("name", name);
+		model.addAttribute("id", id);
 		MemberRegistRequest regReq = new MemberRegistRequest();
 		try {
 			regReq.setRank(rank);
@@ -427,19 +497,22 @@ public class MainController {
 			return "/";
 		}
 	}
-	
+
 	@GetMapping("/member/delete")
 	public String memDelete(Model model) {
 		return "member/delete";
 	}
-	
+
+	/**
+	 * 계정 삭제 처리
+	 */
 	@GetMapping("/member/finishDelete")
 	public String memDeleteFinish(Model model,
-			@RequestParam(value="id") String id) {
+								  @RequestParam(value="id") String id) {
 		if(memberDao.selectById(id)== null)
 			return "/member/errorPage";
 		model.addAttribute("id", id);
-		
+
 		MemberRegistRequest regReq = new MemberRegistRequest();
 		try {
 			regReq.setId(id);
@@ -450,6 +523,6 @@ public class MainController {
 			e.printStackTrace();
 			return "/";
 		}
-	}	
+	}
 //<-------Member------------------------------------------------>	
 }

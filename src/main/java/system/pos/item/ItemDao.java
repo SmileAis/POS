@@ -1,21 +1,17 @@
 package system.pos.item;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ItemDao {
 
@@ -34,7 +30,10 @@ public class ItemDao {
 		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 		this.template = new JdbcTemplate(dataSource);
 	}
-	
+
+	/**
+	 * 모든 상품 조회
+	 */
 	public List<Item> selectAll() {
 		List<Item> results = jdbcTemplate.query("select * from items",
 		(ResultSet rs, int rowNum) -> {
@@ -44,12 +43,19 @@ public class ItemDao {
 		});
 		return results;
 	}
-	
+
+	/**
+	 * 상품 입고
+	 */
 	public void receive(Item item) {
 		String code = item.getCode();
 		String sql = "update items set stock = ?, receiveDate = ? where code = ?";
 		template.update(sql, item.getStock(), item.getReceiveDate() ,code);
 	}
+
+	/**
+	 * 입고 내역
+	 */
 	public void receiveLog(Item item, int count) {
 		Map<String, Object> params = new HashMap<String,Object>();
 		
@@ -60,15 +66,20 @@ public class ItemDao {
 		String sql = "insert into receiveLog values" + "(null, :code, :stock, :receiveDate)";
 
 		jdbcTemplate.update(sql, params);
-		
 	}
-	
+
+	/**
+	 * 재고 수정
+	 */
 	public void change(Item item) {
 		String code = item.getCode();
 		String sql = "update items set stock = ?, receiveDate = ? where code = ?";
 		template.update(sql, item.getStock(), item.getReceiveDate() ,code);
 	}
-	
+
+	/**
+	 *  새로운 상품 추가
+	 */
 	public void insert(Item item) {
 		Map<String, Object> params = new HashMap<String,Object>();
 		
@@ -80,7 +91,10 @@ public class ItemDao {
 
 		jdbcTemplate.update(sql, params);
 	}
-	
+
+	/**
+	 * 판매 상품 기록
+	 */
 	public void insertSoldItem(Item item, int count) {
 		Map<String, Object> params = new HashMap<String,Object>();
 		
@@ -100,7 +114,10 @@ public class ItemDao {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 *  코드로 상품 찾기
+	 */
 	public Item selectByCode(String code) {
 		List<Item> results = template.query("select * from items where code = ?",
 				new RowMapper<Item>() {
@@ -113,19 +130,28 @@ public class ItemDao {
 				}, code);
 				return results.isEmpty() ? null : results.get(0);
 	}
-	
+
+	/**
+	 * 상품 삭제
+	 */
 	public void delete(Item item) {
 		String code = item.getCode();
 		String sql = "delete from items where code = ?";
 		template.update(sql, code);
 	}
-	
+
+	/**
+	 * 상품 판매
+	 */
 	public void sell(Item item) {
 		String code = item.getCode();
 		String sql = "update items set stock = ? where code = ?";
 		template.update(sql, item.getStock() ,code);
 	}
 
+	/**
+	 *	모든 판매 기록 조회
+	 */
 	public List<SellLog> selectAllSellLog() {
 		List<SellLog> results = jdbcTemplate.query("select * from selllog",
 		(ResultSet rs, int rowNum) -> {
@@ -135,7 +161,10 @@ public class ItemDao {
 		});
 		return results;
 	}
-	
+
+	/**
+	 * 당일 판매 조회
+	 */
 	public List<SellLog> selectTodaySellLog() {
 		List<SellLog> results = jdbcTemplate.query("select * from selllog",
 			(ResultSet rs, int rowNum) -> {			
@@ -154,7 +183,10 @@ public class ItemDao {
 		});
 		return results;
 	}
-	
+
+	/**
+	 * 일주일 판매 조회
+	 */
 	public List<SellLog> selectWeekSellLog() {
 		List<SellLog> results = jdbcTemplate.query("select * from selllog",
 			(ResultSet rs, int rowNum) -> {
@@ -206,7 +238,10 @@ public class ItemDao {
 		});
 		return results;
 	}
-	
+
+	/**
+	 * 한달 판매 조회
+	 */
 	public List<SellLog> selectMonthSellLog() {
 		List<SellLog> results = jdbcTemplate.query("select * from selllog",
 			(ResultSet rs, int rowNum) -> {			
