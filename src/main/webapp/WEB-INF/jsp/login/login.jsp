@@ -11,7 +11,7 @@
 		
 		<h2> LOGIN </h2>
 		
-		<form action="login/logincheck" method="GET">
+		<form action="login/logincheck" method="POST">
 			<p>id: <input type="text" name="id"/></p>
 			<p>password: <input type="password" name="pwd"/></p>
 			<input type="submit" value="로그인"/>
